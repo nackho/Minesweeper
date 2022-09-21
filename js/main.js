@@ -57,6 +57,9 @@ function setFlag () {
 }
 
 function clickTile () {
+    if(gameOver || this.classList.contains("tile-clicked")) {
+        return;
+    }
     let tile = this;
     if (flagEnabled) {
         if (tile.innerText === "") {
@@ -68,7 +71,8 @@ function clickTile () {
     }
 
     if (mineLocation.includes(tile.id)) {
-        alert("Game Over");
+        document.getElementById("end-result").innerText = "Game Over";
+        document.getElementById("mine-count").innerText = "😔";
         gameOver = true;
         revealMines();
         return;
@@ -84,11 +88,14 @@ function clickTile () {
 
 
 function setMines () {      
-    mineLocation.push("2-2");
-    mineLocation.push("2-3");
-    mineLocation.push("5-6");
-    mineLocation.push("3-4");
     mineLocation.push("1-1");
+    mineLocation.push("2-2");
+    mineLocation.push("3-3");
+    mineLocation.push("4-4");
+    mineLocation.push("5-5");
+    mineLocation.push("6-6");
+    mineLocation.push("7-7");
+    mineLocation.push("8-8");
 
     // let mineLeft = mineCount;
     // while (mineLeft > 0) {                          //when more than 0 mine left 
@@ -96,7 +103,7 @@ function setMines () {
     //     let y = Math.floor(Math.random() * cols)    //generate random y
     //     let id = x.toString() + "-" + y.toString(); //turn x,y into string
 
-    //     if (!mineLocaiton.includes(id)) {           //if mine location does not include id
+    //     if (!mineLocation.includes(id)) {           //if mine location does not include id
     //         mineLocation.push (id)                  //add id to array of mine location
     //         mineLeft -= 1;                          
     //     }
@@ -108,10 +115,15 @@ function checkMine (x, y) {
     if (x < 0 || x >= rows || y < 0 || y >= cols) {    //no mines created if not within board (10x10)
         return;
     }
+    if (board[x][y].classList.contains("tile-clicked")) {   //if tile is clicked, do none of the below
+        return;
+    }
+
+    board[x][y].classList.add("tile-clicked");       //if tile is checked, add tile-clicked class.
+    tilesClicked += 1;
 
     let minesFound = 0;
 
-    
     minesFound += checkTile(x-1, y-1);   //top left, up = x-1, y translates +-1
     minesFound += checkTile(x-1, y);     //top
     minesFound += checkTile(x-1, y+1);   //top right
@@ -125,7 +137,25 @@ function checkMine (x, y) {
 
     if (minesFound > 0) {                   //if a mine is found
         board[x][y].innerText = minesFound  //change text based off minesFound + the "x#" class.
-        board[x][y].classList.add("x" + minesFound.toString());
+        board[x][y].classList.add("m" + minesFound.toString());
+    }
+    else {
+        checkMine(x-1, y-1);
+        checkMine(x-1, y);
+        checkMine(x-1, y+1);
+
+        checkMine(x, y-1);
+        checkMine(x, y+1);
+
+        checkMine(x+1, y-1);
+        checkMine(x+1, y);
+        checkMine(x+1, y+1);
+    }
+
+    if (tilesClicked == rows * cols - mineCount) {
+        document.getElementById("mine-count").innerText = "😊"
+        document.getElementById("end-result").innerText = "You Win!";
+        gameOver = true;
     }
 }
 
@@ -134,7 +164,7 @@ function checkTile (x, y) {
     if (x < 0 || x >= rows || y < 0 || y >= cols) { // if x/y is NEGATIVE (<0) or if x/y greater than rows/cols, don't do anything
         return 0;
     }
-    if (mineLocation.includes("x.toString () + "-" + y.toString"())) {
+    if (mineLocation.includes(x.toString() + "-" + y.toString())) {
         return 1;
     }
     return 0;
