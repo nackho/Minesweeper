@@ -1,14 +1,11 @@
 /*----- constants -----*/
 const board = [];
-const mine = "💣" ;
-
-alive = true;
 
 /*----- app's state (variables) -----*/
 let rows = 10;
 let cols = 10;
-
 let mineCount = 8;
+
 let mineLocation = []; //notated by row vs column array ie: [5-1], [4-3]
 let gameOver = false; //prevent further action once gameOver is true
 let tilesClicked = 0;
@@ -28,25 +25,25 @@ window.onload = function () { //window.onload works when the full page loads. do
 }
 
 function startGame() {
-    document.getElementById("mine-count").textContent = mineCount;
-    document.getElementById("flag-button").addEventListener("click", setFlag);
-    setMines();
+    document.getElementById("mine-count").textContent = mineCount;                  //HTML changes from 0 -> mineCount set above
+    document.getElementById("flag-button").addEventListener("click", setFlag);      //event listener for flag button
+    setMines();                                                                     //invoke set mines
 
-    for (let x = 0; x < rows; x++) {
+    for (let x = 0; x < rows; x++) {                                                //for loop that adds arrays until it reaches rows count
         let row = [];
-        for (let y = 0; y < cols; y++) {
-            const tile = document.createElement("div");
-            tile.id = x.toString() + "-" + y.toString();
-            tile.addEventListener("click", clickTile);
-            document.getElementById("board").append(tile);
-            row.push(tile);
+        for (let y = 0; y < cols; y++) {                                            //for loop that adds arrays until it reaches cols count
+            const tile = document.createElement("div");                             //creates tile div
+            tile.id = x.toString() + "-" + y.toString();                            //"x","y" tile.id assigned to each div
+            tile.addEventListener("click", clickTile);                              //event listener for click and tile function
+            document.getElementById("board").append(tile);                          //add tile to board array
+            row.push(tile);                                                         //add tile to end of
         }
-        board.push(row);
+        board.push(row);                                                            //add rows along the board
     }
 }
 
-// left click function
-function setFlag () {
+// click function
+function setFlag () {                                                               //changes flag to lgray vs dgray based on if its enabled.
     if (flagEnabled) {
         flagEnabled = false;
         document.getElementById("flag-button").style.backgroundColor = "lightgray";
@@ -56,11 +53,11 @@ function setFlag () {
     }
 }
 
-function clickTile () {
+function clickTile () {                                                             //if game is over or tile is clicked, return
     if(gameOver || this.classList.contains("tile-clicked")) {
         return;
     }
-    let tile = this;
+    let tile = this;                                                                //if flag enabled, put flag if theres no flag and vice versa
     if (flagEnabled) {
         if (tile.innerText === "") {
             tile.innerText = "🚩";
@@ -70,7 +67,7 @@ function clickTile () {
         return;
     }
 
-    if (mineLocation.includes(tile.id)) {
+    if (mineLocation.includes(tile.id)) {                                           //if the mine location has the tile.id you clicked, change text to loss conditions and reveal mines
         document.getElementById("end-result").innerText = "Game Over";
         document.getElementById("mine-count").innerText = "😔";
         gameOver = true;
@@ -78,7 +75,7 @@ function clickTile () {
         return;
     }
 
-    let coords = tile.id.split("-"); // "0-0" -> ["0". "0"]
+    let coords = tile.id.split("-"); // "0-0" -> ["0". "0"]                         
     let x = parseInt(coords[0]);     // turn ^ into integers
     let y = parseInt(coords[1]);
     checkMine(x, y);
@@ -87,7 +84,7 @@ function clickTile () {
 //random mine generation
 
 
-function setMines () {      
+function setMines () {          //can be used to test. otherwise use mineLeft=mineCount
     mineLocation.push("1-1");
     mineLocation.push("2-2");
     mineLocation.push("3-3");
