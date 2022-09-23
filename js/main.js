@@ -2,32 +2,31 @@
 const board = [];
 
 /*----- app's state (variables) -----*/
-let rows = 10;
-let cols = 10;
-let mineCount = 8;
+let rows, cols, mineCount, flagEnabled, tilesClicked, gameOver
 
 let mineLocation = []; //notated by row vs column array ie: [5-1], [4-3]
-let gameOver = false; //prevent further action once gameOver is true
-let tilesClicked = 0;
-let flagEnabled = false;
 
 /*----- cached element references -----*/
-
-
+const winResultEl = document.querySelector("h2")
+const resetBtnEl = document.getElementById("reset")
+const flagBtnEl = document.getElementById("flag-button")
+const mineTotal = document.getElementById("mine-count")
 
 /*----- event listeners -----*/
+resetBtnEl.addEventListener("click", handleResetClick)
 
-
+flagBtnEl.addEventListener("click", setFlag)
 
 /*----- functions -----*/
-window.onload = function () { //window.onload works when the full page loads. document.onload works when DOM is ready, but can be before browser is ready
-    startGame ();
-}
-
-function startGame() {
-    document.getElementById("mine-count").textContent = mineCount;                  //HTML changes from 0 -> mineCount set above
-    document.getElementById("flag-button").addEventListener("click", setFlag);      //event listener for flag button
-    setMines();                                                                     //invoke set mines
+function startGame() {                                                                     //invoke set mines
+    rows = 10;
+    cols = 10;
+    mineCount = 10;
+    flagEnabled = false;
+    tilesClicked = 0;
+    gameOver = false;
+ 
+    setMines();
 
     for (let x = 0; x < rows; x++) {                                                //for loop that adds arrays until it reaches rows count
         let row = [];
@@ -40,6 +39,7 @@ function startGame() {
         }
         board.push(row);                                                            //add rows along the board
     }
+    render();
 }
 
 // click function
@@ -53,22 +53,32 @@ function setFlag () {                                                           
     }
 }
 
+function handleResetClick () {
+    window.location.reload();
+    startGame();
+}
+
 function clickTile () {                                                             //if game is over or tile is clicked, return
     if(gameOver || this.classList.contains("tile-clicked")) {
         return;
     }
     let tile = this;                                                                //if flag enabled, put flag if theres no flag and vice versa
     if (flagEnabled) {
-        if (tile.innerText === "") {
-            tile.innerText = "🚩";
-        } else if (tile.innerText === "🚩") {
-            tile.innerText = "";
+        if (!tile.classList.contains("flag")) {
+            tile.classList.add("flag");
+            tile.innerHTML = "🚩";
+            mineCount--;
+        } else {
+            tile.classList.remove("flag");
+            tile.innerHTML = "";
+            mineCount++;
         }
+        render();
+        checkWin();
         return;
     }
-
     if (mineLocation.includes(tile.id)) {                                           //if the mine location has the tile.id you clicked, change text to loss conditions and reveal mines
-        document.getElementById("end-result").innerText = "Game Over";
+        winResultEl.innerText = "Game Over";
         document.getElementById("mine-count").innerText = "😔";
         gameOver = true;
         revealMines();
@@ -83,28 +93,29 @@ function clickTile () {                                                         
 
 //random mine generation
 
-
 function setMines () {          //can be used to test. otherwise use mineLeft=mineCount
-    mineLocation.push("1-1");
-    mineLocation.push("2-2");
-    mineLocation.push("3-3");
-    mineLocation.push("4-4");
-    mineLocation.push("5-5");
-    mineLocation.push("6-6");
-    mineLocation.push("7-7");
-    mineLocation.push("8-8");
+    // mineLocation.push("1-1");
+    // mineLocation.push("2-2");
+    // mineLocation.push("3-3");
+    // mineLocation.push("4-4");
+    // mineLocation.push("5-5");
+    // mineLocation.push("6-6");
+    // mineLocation.push("7-7");
+    // mineLocation.push("8-8");
+    // mineLocation.push("9-9");
+    // mineLocation.push("0-0");
 
-    // let mineLeft = mineCount;
-    // while (mineLeft > 0) {                          //when more than 0 mine left 
-    //     let x = Math.floor(Math.random() * rows)    //generate random x
-    //     let y = Math.floor(Math.random() * cols)    //generate random y
-    //     let id = x.toString() + "-" + y.toString(); //turn x,y into string
+    let mineLeft = mineCount;
+    while (mineLeft > 0) {                          //when more than 0 mine left 
+        let x = Math.floor(Math.random() * rows)    //generate random x
+        let y = Math.floor(Math.random() * cols)    //generate random y
+        let id = x.toString() + "-" + y.toString(); //turn x,y into string
 
-    //     if (!mineLocation.includes(id)) {           //if mine location does not include id
-    //         mineLocation.push (id)                  //add id to array of mine location
-    //         mineLeft -= 1;                          
-    //     }
-    // }
+        if (!mineLocation.includes(id)) {           //if mine location does not include id
+            mineLocation.push (id)                  //add id to array of mine location
+            mineLeft -= 1;                          
+        }
+    }
 }
 
 //check mines, starting at 0, adding based on x, y coordinates
@@ -112,7 +123,7 @@ function checkMine (x, y) {
     if (x < 0 || x >= rows || y < 0 || y >= cols) {    //no mines created if not within board (10x10)
         return;
     }
-    if (board[x][y].classList.contains("tile-clicked")) {   //if tile is clicked, do none of the below
+    if ((board[x][y].classList.contains("tile-clicked") || board[x][y].classList.contains("flag"))) {   //if tile is clicked, do none of the below
         return;
     }
 
@@ -148,12 +159,7 @@ function checkMine (x, y) {
         checkMine(x+1, y);
         checkMine(x+1, y+1);
     }
-
-    if (tilesClicked == rows * cols - mineCount) {
-        document.getElementById("mine-count").innerText = "😊"
-        document.getElementById("end-result").innerText = "You Win!";
-        gameOver = true;
-    }
+    checkWin()
 }
 
 //check tile if its on board and give a value for above function.
@@ -179,4 +185,16 @@ function revealMines() {
     }    
 }
 
-//check win
+function checkWin() {
+    if ((tilesClicked === 90 || tilesClicked === rows * cols - mineCount)) {
+        document.getElementById("mine-count").innerText = "😊"
+        winResultEl.innerText = "You Win!";
+        gameOver = true;
+    }
+}
+
+startGame()
+
+function render() {
+    mineTotal.innerText = mineCount
+}
