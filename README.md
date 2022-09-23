@@ -29,7 +29,11 @@ TECHOLOGIES USED
 
 GETTING STARTED
 
+<<<<<<< HEAD
   Link: https://nackho.github.io/Minesweeper/
+=======
+  Link:
+>>>>>>> fe9565e (Create README.md)
 
 - Click tile to reveal what is under.
 - Enable Flag button to place/remove flags.
