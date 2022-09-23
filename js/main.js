@@ -4,7 +4,7 @@ const board = [];
 /*----- app's state (variables) -----*/
 let rows, cols, mineCount, flagEnabled, tilesClicked, gameOver
 
-let mineLocation = []; //notated by row vs column array ie: [5-1], [4-3]
+let mineLocation = [];
 
 /*----- cached element references -----*/
 const winResultEl = document.querySelector("h2")
@@ -18,7 +18,7 @@ resetBtnEl.addEventListener("click", handleResetClick)
 flagBtnEl.addEventListener("click", setFlag)
 
 /*----- functions -----*/
-function startGame() {                                                                     //invoke set mines
+function startGame() {                                                                    
     rows = 10;
     cols = 10;
     mineCount = 10;
@@ -28,22 +28,22 @@ function startGame() {                                                          
  
     setMines();
 
-    for (let x = 0; x < rows; x++) {                                                //for loop that adds arrays until it reaches rows count
+    for (let x = 0; x < rows; x++) {                                            
         let row = [];
-        for (let y = 0; y < cols; y++) {                                            //for loop that adds arrays until it reaches cols count
-            const tile = document.createElement("div");                             //creates tile div
-            tile.id = x.toString() + "-" + y.toString();                            //"x","y" tile.id assigned to each div
-            tile.addEventListener("click", clickTile);                              //event listener for click and tile function
-            document.getElementById("board").append(tile);                          //add tile to board array
-            row.push(tile);                                                         //add tile to end of
+        for (let y = 0; y < cols; y++) {                                            
+            const tile = document.createElement("div");                            
+            tile.id = x.toString() + "-" + y.toString();                           
+            tile.addEventListener("click", clickTile);                             
+            document.getElementById("board").append(tile);                          
+            row.push(tile);                                                         
         }
-        board.push(row);                                                            //add rows along the board
+        board.push(row);                                                            
     }
     render();
 }
 
 // click function
-function setFlag () {                                                               //changes flag to lgray vs dgray based on if its enabled.
+function setFlag () {                                                              
     if (flagEnabled) {
         flagEnabled = false;
         document.getElementById("flag-button").style.backgroundColor = "lightgray";
@@ -58,11 +58,11 @@ function handleResetClick () {
     startGame();
 }
 
-function clickTile () {                                                             //if game is over or tile is clicked, return
+function clickTile () {                                                            
     if(gameOver || this.classList.contains("tile-clicked")) {
         return;
     }
-    let tile = this;                                                                //if flag enabled, put flag if theres no flag and vice versa
+    let tile = this;                                                              
     if (flagEnabled) {
         if (!tile.classList.contains("flag")) {
             tile.classList.add("flag");
@@ -77,7 +77,7 @@ function clickTile () {                                                         
         checkWin();
         return;
     }
-    if (mineLocation.includes(tile.id)) {                                           //if the mine location has the tile.id you clicked, change text to loss conditions and reveal mines
+    if (mineLocation.includes(tile.id)) {                                         
         winResultEl.innerText = "Game Over";
         document.getElementById("mine-count").innerText = "😔";
         gameOver = true;
@@ -85,15 +85,13 @@ function clickTile () {                                                         
         return;
     }
 
-    let coords = tile.id.split("-"); // "0-0" -> ["0". "0"]                         
-    let x = parseInt(coords[0]);     // turn ^ into integers
+    let coords = tile.id.split("-");                        
+    let x = parseInt(coords[0]);     
     let y = parseInt(coords[1]);
     checkMine(x, y);
 }
 
-//random mine generation
-
-function setMines () {          //can be used to test. otherwise use mineLeft=mineCount
+function setMines () {          
     // mineLocation.push("1-1");
     // mineLocation.push("2-2");
     // mineLocation.push("3-3");
@@ -106,45 +104,45 @@ function setMines () {          //can be used to test. otherwise use mineLeft=mi
     // mineLocation.push("0-0");
 
     let mineLeft = mineCount;
-    while (mineLeft > 0) {                          //when more than 0 mine left 
-        let x = Math.floor(Math.random() * rows)    //generate random x
-        let y = Math.floor(Math.random() * cols)    //generate random y
-        let id = x.toString() + "-" + y.toString(); //turn x,y into string
+    while (mineLeft > 0) {                          
+        let x = Math.floor(Math.random() * rows)    
+        let y = Math.floor(Math.random() * cols)   
+        let id = x.toString() + "-" + y.toString(); 
 
-        if (!mineLocation.includes(id)) {           //if mine location does not include id
-            mineLocation.push (id)                  //add id to array of mine location
+        if (!mineLocation.includes(id)) {           
+            mineLocation.push (id)                  
             mineLeft -= 1;                          
         }
     }
 }
 
-//check mines, starting at 0, adding based on x, y coordinates
 function checkMine (x, y) {
-    if (x < 0 || x >= rows || y < 0 || y >= cols) {    //no mines created if not within board (10x10)
-        return;
-    }
-    if ((board[x][y].classList.contains("tile-clicked") || board[x][y].classList.contains("flag"))) {   //if tile is clicked, do none of the below
+    if (x < 0 || x >= rows || y < 0 || y >= cols) {   
         return;
     }
 
-    board[x][y].classList.add("tile-clicked");       //if tile is checked, add tile-clicked class.
+    if ((board[x][y].classList.contains("tile-clicked") || board[x][y].classList.contains("flag"))) {  
+        return;
+    }
+
+    board[x][y].classList.add("tile-clicked");     
     tilesClicked += 1;
 
     let minesFound = 0;
 
-    minesFound += checkTile(x-1, y-1);   //top left, up = x-1, y translates +-1
-    minesFound += checkTile(x-1, y);     //top
-    minesFound += checkTile(x-1, y+1);   //top right
+    minesFound += checkTile(x-1, y-1);  
+    minesFound += checkTile(x-1, y);    
+    minesFound += checkTile(x-1, y+1);  
 
-    minesFound += checkTile(x, y-1);      //left, x same plane, y translates +-1
-    minesFound += checkTile(x, y+1);      //right
+    minesFound += checkTile(x, y-1);     
+    minesFound += checkTile(x, y+1);      
 
-    minesFound += checkTile(x+1, y-1);   //bottom left, down = x+1, y translates +-1
-    minesFound += checkTile(x+1, y);     //bottom
-    minesFound += checkTile(x+1, y+1);   //bottom right
+    minesFound += checkTile(x+1, y-1);   
+    minesFound += checkTile(x+1, y);    
+    minesFound += checkTile(x+1, y+1);  
 
-    if (minesFound > 0) {                   //if a mine is found
-        board[x][y].innerText = minesFound  //change text based off minesFound + the "x#" class.
+    if (minesFound > 0) {                   
+        board[x][y].innerText = minesFound  
         board[x][y].classList.add("m" + minesFound.toString());
     }
     else {
@@ -162,11 +160,11 @@ function checkMine (x, y) {
     checkWin()
 }
 
-//check tile if its on board and give a value for above function.
 function checkTile (x, y) {
-    if (x < 0 || x >= rows || y < 0 || y >= cols) { // if x/y is NEGATIVE (<0) or if x/y greater than rows/cols, don't do anything
+    if (x < 0 || x >= rows || y < 0 || y >= cols) { 
         return 0;
     }
+    
     if (mineLocation.includes(x.toString() + "-" + y.toString())) {
         return 1;
     }
@@ -174,11 +172,11 @@ function checkTile (x, y) {
 }
 
 function revealMines() {
-    for (let x = 0; x < rows; x++) {       //scours whole board
+    for (let x = 0; x < rows; x++) {       
         for (let y = 0; y < cols; y++) {
-            let tile = board[x][y]         // let tile = x,y of board
+            let tile = board[x][y]        
             if (mineLocation.includes(tile.id)) {  
-                tile.innerText = "💣"       //if mine location includes tile.id, change text to bomb, make background red.
+                tile.innerText = "💣"      
                 tile.style.backgroundColor = "red"
             }
         }
