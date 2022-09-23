@@ -29,7 +29,7 @@ TECHOLOGIES USED
 
 GETTING STARTED
 
-  Link:
+  Link: https://nackho.github.io/Minesweeper/
 
 - Click tile to reveal what is under.
 - Enable Flag button to place/remove flags.
